@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proyecto 1 - Avance</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <section class="card hero">
+      <h1>Proyecto 1 - Avance</h1>
+      <p>Aplicación web en TypeScript para aproximar sen(x) con serie de Taylor y preparar la simulación del péndulo simple.</p>
+    </section>
+
+    <section class="card">
+      <h2>Datos de entrada</h2>
+      <div class="grid">
+        <div>
+          <label for="theta0">Ángulo inicial θ0 (rad)</label>
+          <input id="theta0" type="number" step="any" value="0.5">
+        </div>
+        <div>
+          <label for="omega0">Velocidad angular inicial ω0</label>
+          <input id="omega0" type="number" step="any" value="0">
+        </div>
+        <div>
+          <label for="L">Longitud L</label>
+          <input id="L" type="number" step="any" value="1">
+        </div>
+        <div>
+          <label for="h">Paso h</label>
+          <input id="h" type="number" step="any" value="1">
+        </div>
+        <div>
+          <label for="tTotal">Tiempo total</label>
+          <input id="tTotal" type="number" step="any" value="12">
+        </div>
+        <div>
+          <label for="nTaylor">Términos de Taylor</label>
+          <input id="nTaylor" type="number" step="1" value="5">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="runBtn">Ejecutar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Resultados</h2>
+      <div id="output" class="output">Sin ejecutar todavía.</div>
+      <div id="testOutput" class="test"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>t</th>
+            <th>θ</th>
+            <th>ω</th>
+            <th>sinTaylor(θ)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
