@@ -1,4 +1,4 @@
-# Proyecto 1 - Avance en Visual Studio
+# Proyecto 1 - Avance
 
 ## Estructura
 - index.html
