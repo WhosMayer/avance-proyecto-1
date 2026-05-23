@@ -36,8 +36,3 @@ Los parámetros por defecto (θ₀=1.2 rad, L=1 m, h=0.01, n=5) son buenos para 
 - Error de propagación (visible en gráfica Error Abs vs tiempo)
 - Error absoluto, relativo porcentual, aproximado porcentual
 - Tolerancia basada en cifras significativas
-
-### Compilar TypeScript
-```bash
-npx tsc app.ts --target ES2017 --lib "ES2017,DOM" --outFile app.js --ignoreDeprecations "6.0"
-```
