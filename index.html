@@ -3,68 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Proyecto 1 - Avance</title>
+  <title>Proyecto 1 — Péndulo Simple | Métodos Numéricos</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container">
-    <section class="card hero">
-      <h1>Proyecto 1 - Avance</h1>
-      <p>Aplicación web en TypeScript para aproximar sen(x) con serie de Taylor y preparar la simulación del péndulo simple.</p>
-    </section>
+<main class="container">
 
-    <section class="card">
-      <h2>Datos de entrada</h2>
-      <div class="grid">
-        <div>
-          <label for="theta0">Ángulo inicial θ0 (rad)</label>
-          <input id="theta0" type="number" step="any" value="0.5">
-        </div>
-        <div>
-          <label for="omega0">Velocidad angular inicial ω0</label>
-          <input id="omega0" type="number" step="any" value="0">
-        </div>
-        <div>
-          <label for="L">Longitud L</label>
-          <input id="L" type="number" step="any" value="1">
-        </div>
-        <div>
-          <label for="h">Paso h</label>
-          <input id="h" type="number" step="any" value="1">
-        </div>
-        <div>
-          <label for="tTotal">Tiempo total</label>
-          <input id="tTotal" type="number" step="any" value="12">
-        </div>
-        <div>
-          <label for="nTaylor">Términos de Taylor</label>
-          <input id="nTaylor" type="number" step="1" value="5">
-        </div>
+  <!-- HEADER -->
+  <header class="card hero">
+    <h1>Péndulo Simple — Análisis del Error Numérico</h1>
+    <p>Euler explícito · Runge-Kutta 4 · Series de Taylor · IEEE 754 · Propagación del error</p>
+  </header>
+
+  <!-- PARÁMETROS + STATS -->
+  <section class="layout-cols">
+    <div class="card">
+      <h2>Parámetros de entrada</h2>
+      <div class="grid-2">
+        <div><label for="theta0">θ₀ — ángulo inicial (rad)</label>
+          <input id="theta0" type="number" step="any" value="1.2"></div>
+        <div><label for="omega0">ω₀ — velocidad angular inicial</label>
+          <input id="omega0" type="number" step="any" value="0"></div>
+        <div><label for="L">L — longitud del péndulo (m)</label>
+          <input id="L" type="number" step="any" value="1"></div>
+        <div><label for="h">h — paso de Euler (s)</label>
+          <input id="h" type="number" step="any" value="0.01"></div>
+        <div><label for="tTotal">T — tiempo total (s)</label>
+          <input id="tTotal" type="number" step="any" value="10"></div>
+        <div><label for="nTaylor">n — términos de Taylor para sin(θ)</label>
+          <input id="nTaylor" type="number" step="1" value="5" min="1" max="15"></div>
       </div>
-
       <div class="actions">
-        <button id="runBtn">Ejecutar</button>
+        <button id="runBtn">▶ Ejecutar simulación</button>
       </div>
-    </section>
+      <div id="output" class="msg-box"></div>
+    </div>
 
-    <section class="card">
-      <h2>Resultados</h2>
-      <div id="output" class="output">Sin ejecutar todavía.</div>
-      <div id="testOutput" class="test"></div>
-      <table>
-        <thead>
-          <tr>
-            <th>t</th>
-            <th>θ</th>
-            <th>ω</th>
-            <th>sinTaylor(θ)</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </section>
-  </main>
+    <div class="card">
+      <h2>Resumen estadístico</h2>
+      <div id="statsBox" class="stats-grid"></div>
+    </div>
+  </section>
 
-  <script src="app.js"></script>
+  <!-- PESTAÑAS -->
+  <div class="card tab-card">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="pSimulacion">θ(t) y ω(t)</button>
+      <button class="tab-btn" data-tab="pTabla">Tabla de errores</button>
+      <button class="tab-btn" data-tab="pCompar">Euler vs RK4</button>
+      <button class="tab-btn" data-tab="pPasos">Error vs paso h</button>
+      <button class="tab-btn" data-tab="pTaylor">Series de Taylor</button>
+      <button class="tab-btn" data-tab="pRedondeo">Redondeo IEEE 754</button>
+    </div>
+
+    <!-- ── TAB: SIMULACIÓN ── -->
+    <div id="pSimulacion" class="tab-panel active">
+      <div class="leyenda">
+        <span><span class="dot" style="background:#0f766e"></span>Euler (Taylor sin)</span>
+        <span><span class="dot" style="background:#d97706;opacity:.7"></span>Analítica (ángulo pequeño)</span>
+      </div>
+      <div class="chart-wrap"><canvas id="gTheta" role="img" aria-label="Ángulo θ vs tiempo">θ(t)</canvas></div>
+      <p class="chart-label">Gráfica 1 — θ(t): Euler explícito con sin(θ) ≈ Taylor vs. solución analítica de ángulo pequeño.</p>
+
+      <div class="chart-wrap" style="height:180px">
+        <canvas id="gOmega" role="img" aria-label="Velocidad angular vs tiempo">ω(t)</canvas>
+      </div>
+      <p class="chart-label">Gráfica 2 — ω(t): velocidad angular del péndulo.</p>
+
+      <div class="chart-wrap" style="height:180px">
+        <canvas id="gError" role="img" aria-label="Error absoluto vs tiempo">Error</canvas>
+      </div>
+      <p class="chart-label">Gráfica 3 — Error absoluto |θ_Euler − θ_analítica| vs tiempo. Muestra la propagación y acumulación del error.</p>
+    </div>
+
+    <!-- ── TAB: TABLA ── -->
+    <div id="pTabla" class="tab-panel">
+      <p class="nota">Se muestran hasta 80 filas muestreadas del total de iteraciones.</p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>t (s)</th><th>θ Euler</th><th>ω</th>
+            <th>θ Analítica</th><th>Error Abs</th>
+            <th>Error Rel %</th><th>Error Aprox %</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB: EULER vs RK4 ── -->
+    <div id="pCompar" class="tab-panel">
+      <div class="leyenda">
+        <span><span class="dot" style="background:#0f766e"></span>Euler</span>
+        <span><span class="dot" style="background:#2563eb"></span>RK4</span>
+        <span><span class="dot" style="background:#d97706;opacity:.7"></span>Analítica</span>
+      </div>
+      <div class="chart-wrap"><canvas id="gCompar" role="img" aria-label="Comparación Euler vs RK4">Comparación</canvas></div>
+      <p class="chart-label">Gráfica 4 — θ(t): Euler explícito (O(h)) vs Runge-Kutta 4 (O(h⁴)). RK4 se mantiene mucho más cerca de la analítica.</p>
+
+      <div class="leyenda">
+        <span><span class="dot" style="background:#dc2626"></span>Error Euler</span>
+        <span><span class="dot" style="background:#2563eb"></span>Error RK4</span>
+      </div>
+      <div class="chart-wrap" style="height:180px"><canvas id="gErrComp" role="img" aria-label="Error comparado">Error</canvas></div>
+      <p class="chart-label">Gráfica 5 — Error absoluto: el error de Euler crece con el tiempo mientras que RK4 lo controla mejor.</p>
+
+      <div class="info-box">
+        <strong>Error de truncamiento del método</strong><br>
+        <b>Euler:</b> error local O(h²), error global O(h). Acumula error en cada paso.<br>
+        <b>RK4:</b> error local O(h⁵), error global O(h⁴). Cuatro evaluaciones por paso, mucho más preciso.
+      </div>
+    </div>
+
+    <!-- ── TAB: ERROR vs PASO ── -->
+    <div id="pPasos" class="tab-panel">
+      <div class="leyenda">
+        <span><span class="dot" style="background:#dc2626"></span>Error máximo</span>
+        <span><span class="dot" style="background:#d97706"></span>Error final</span>
+      </div>
+      <div class="chart-wrap"><canvas id="gPasoErr" role="img" aria-label="Error vs tamaño de paso">Error vs paso</canvas></div>
+      <p class="chart-label">Gráfica 6 — Error vs tamaño del paso h. Convergencia esperada de orden ≈ 1 para Euler explícito.</p>
+
+      <div style="overflow-x:auto; margin-top:16px">
+        <table>
+          <thead><tr>
+            <th>Paso h</th><th>Pasos totales</th>
+            <th>Error máximo</th><th>Error final</th>
+          </tr></thead>
+          <tbody id="tbodyPasos"></tbody>
+        </table>
+      </div>
+
+      <div class="info-box" style="margin-top:16px">
+        <strong>Error de truncamiento del método de Euler</strong><br>
+        Al reducir h a la mitad, el error global se reduce aproximadamente a la mitad (orden 1).
+      </div>
+    </div>
+
+    <!-- ── TAB: TAYLOR ── -->
+    <div id="pTaylor" class="tab-panel">
+      <div class="info-box">
+        <strong>Serie de Taylor para sin(θ)</strong><br>
+        sin(θ) = θ − θ³/3! + θ⁵/5! − θ⁷/7! + ···<br><br>
+        El <strong>error de truncamiento</strong> de la función depende de n y de |θ|. Es diferente del error de truncamiento del método numérico (que depende de h).
+        Ambos son fuentes de error <em>independientes</em> que se propagan en la simulación.
+      </div>
+      <label style="max-width:280px">Ángulo de prueba θ (rad)
+        <input id="taylorX" type="number" step="0.1" value="1.2" min="-3.14" max="3.14">
+      </label>
+      <div class="chart-wrap" style="margin-top:12px"><canvas id="gTaylor" role="img" aria-label="Error de Taylor vs términos n">Taylor</canvas></div>
+      <p class="chart-label">Gráfica 7 — Error de truncamiento de sin(θ) vs número de términos n.</p>
+      <div style="overflow-x:auto; margin-top:12px">
+        <table>
+          <thead><tr>
+            <th>Términos n</th><th>sin(θ) aprox</th><th>sin(θ) exacto</th><th>Error</th>
+          </tr></thead>
+          <tbody id="tbodyTaylor"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB: REDONDEO ── -->
+    <div id="pRedondeo" class="tab-panel">
+      <div class="info-box">
+        <strong>IEEE 754 — Representación de punto flotante de 64 bits</strong><br>
+        Todo número real se almacena como (−1)^s × 2^(e−1023) × 1.mantisa.
+        Los números como 0.1 son periódicos en base 2 (0.0001100110011…) y se truncan, introduciendo
+        error desde el primer momento. Este error se <strong>acumula</strong> en procesos iterativos.
+      </div>
+      <div class="ieee-bits">
+        <div class="ieee-seg s">1 bit<br><small>Signo</small></div>
+        <div class="ieee-seg e">11 bits<br><small>Exponente</small></div>
+        <div class="ieee-seg m">52 bits — Mantisa (fracción)</div>
+      </div>
+      <h3>Demostración de error de redondeo</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Expresión</th><th>Resultado computado</th><th>Esperado</th><th>Error</th></tr></thead>
+          <tbody id="tbodyRedondeo"></tbody>
+        </table>
+      </div>
+      <h3 style="margin-top:16px">Acumulación de error: sumar 0.1 × 100 veces</h3>
+      <div id="acumInfo" class="msg-box" style="margin-bottom:8px"></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="gRedondeo" role="img" aria-label="Acumulación error redondeo">Redondeo</canvas></div>
+      <p class="chart-label">Gráfica 8 — El error de redondeo se acumula de forma no uniforme a medida que crece el número de iteraciones.</p>
+
+      <div class="info-box" style="margin-top:12px">
+        <strong>Error de propagación:</strong> Un pequeño error inicial en θ₀ (o el error de redondeo en cada
+        paso) se amplifica con el tiempo en sistemas no lineales como el péndulo. La naturaleza iterativa de
+        Euler propaga y amplifica estos errores, efecto visible en la gráfica 3.
+      </div>
+    </div>
+
+  </div><!-- fin tab-card -->
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
